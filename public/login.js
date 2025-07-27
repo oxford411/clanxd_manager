@@ -1,13 +1,3 @@
-// --- Firebase 설정 ---
-const firebaseConfig = {
-  apiKey: "AIzaSyA_tuVB-EIWOIpylyUEdY-d5yhmy9fyML0",
-  authDomain: "twrpg-clan-xd.firebaseapp.com",
-  projectId: "twrpg-clan-xd",
-  storageBucket: "twrpg-clan-xd.firebasestorage.app",
-  messagingSenderId: "979681760419",
-  appId: "1:979681760419:web:c996acf336669116ad9b16"
-};
-
 // Firebase 초기화
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
