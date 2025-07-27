@@ -1,0 +1,33 @@
+/* style.css */
+:root {
+    --bg-color: #111827; --text-color: #d1d5db; --card-bg: #1f2937;
+    --border-color: #374151; --input-bg: #374151; --input-border: #4b5563;
+    --primary-color: #3b82f6; --primary-hover: #2563eb; --primary-active: #1d4ed8;
+    --danger-color: #ef4444; --danger-hover: #dc2626;
+}
+html.light {
+    --bg-color: #f9fafb; --text-color: #1f2937; --card-bg: #ffffff;
+    --border-color: #e5e7eb; --input-bg: #f3f4f6; --input-border: #d1d5db;
+}
+body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+.card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem; transition: background-color 0.3s, border-color 0.3s; }
+.input-field, .select-field { background-color: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-color); border-radius: 0.5rem; padding: 0.5rem 0.75rem; width: 100%; transition: all 0.2s; }
+.input-field:focus, .select-field:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px var(--primary-color); }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.6rem 1.2rem; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+.btn:disabled { background-color: #4b5563; cursor: not-allowed; opacity: 0.5; }
+.btn-primary { background-color: var(--primary-color); color: #ffffff; }
+.btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+.btn-secondary { background-color: var(--input-bg); border-color: var(--input-border); }
+.btn-secondary:hover:not(:disabled) { border-color: var(--primary-color); }
+.btn-danger { background-color: var(--danger-color); color: #ffffff; }
+.btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); }
+.tab-btn { padding: 0.75rem 1.5rem; border-bottom: 2px solid transparent; font-weight: 600; color: var(--text-color); opacity: 0.7; }
+.tab-btn:hover { opacity: 1; }
+.tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); opacity: 1; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.admin-only { display: none !important; }
+body.admin-mode .admin-only { display: revert !important; }
+#auth-container { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+.auth-card { width: 100%; max-width: 420px; }
+.hidden { display: none !important; }
