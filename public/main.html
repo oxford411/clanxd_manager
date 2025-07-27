@@ -3,50 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The World RPG 통합 관리 매니저</title>
+    <title>clan XD 매니저</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="p-4 sm:p-6">
-    <!-- 로딩 화면 -->
-    <div id="loader" class="text-center p-10">
-        <p>데이터를 불러오는 중...</p>
+    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-color"></div>
     </div>
 
-    <!-- 메인 앱 컨테이너 -->
-    <div id="app-container" class="max-w-screen-xl mx-auto space-y-6 hidden">
+    <div id="app" class="max-w-screen-xl mx-auto space-y-6 hidden">
         <header class="flex justify-between items-center flex-wrap gap-y-4">
-            <h1 id="current-user-display" class="text-2xl sm:text-3xl font-bold"></h1>
+            <h1 class="text-2xl sm:text-3xl font-bold">clan XD 매니저</h1>
             <div class="flex items-center gap-2 sm:gap-4">
-                <button id="theme-toggle" class="btn btn-secondary p-2"><i data-lucide="sun"></i></button>
-                <button id="logout-btn" class="btn btn-danger">로그아웃</button>
+                <div id="user-info" class="text-sm"></div>
+                <div class="flex items-center space-x-2 text-sm admin-only">
+                    <label for="admin-mode-toggle">관리자 모드</label>
+                    <input type="checkbox" id="admin-mode-toggle" class="form-checkbox h-5 w-5 rounded">
+                </div>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">로그아웃</button>
+                <button id="theme-toggle" class="btn btn-secondary p-2"><i data-lucide="sun" class="icon-sm hidden dark-icon"></i><i data-lucide="moon" class="icon-sm light-icon"></i></button>
             </div>
         </header>
-
         <nav class="border-b border-gray-200 dark:border-gray-700">
             <div class="-mb-px flex flex-wrap" aria-label="Tabs">
                 <button class="tab-btn active" data-tab="team-management"><i data-lucide="users" class="icon-xs mr-2"></i>팀 관리</button>
-                <button class="tab-btn admin-only" data-tab="character-management"><i data-lucide="user-cog" class="icon-xs mr-2"></i>캐릭터 관리</button>
-                <button class="tab-btn admin-only" data-tab="user-management"><i data-lucide="user-check" class="icon-xs mr-2"></i>사용자 관리</button>
-                <button class="tab-btn admin-only" data-tab="point-management"><i data-lucide="coins" class="icon-xs mr-2"></i>포인트 관리</button>
+                <button class="tab-btn" data-tab="user-management"><i data-lucide="user-cog" class="icon-xs mr-2"></i>유저 관리</button>
+                <button class="tab-btn" data-tab="point-management"><i data-lucide="coins" class="icon-xs mr-2"></i>포인트 관리</button>
                 <button class="tab-btn" data-tab="point-search"><i data-lucide="search" class="icon-xs mr-2"></i>포인트 검색</button>
             </div>
         </nav>
-
         <main>
-            <!-- 각 탭의 내용은 app.js에서 동적으로 채워집니다 -->
-            <div id="team-management" class="tab-content active space-y-6"></div>
-            <div id="character-management" class="tab-content space-y-6 admin-only"></div>
-            <div id="user-management" class="tab-content space-y-6 admin-only"></div>
-            <div id="point-management" class="tab-content space-y-6 admin-only"></div>
-            <div id="point-search" class="tab-content space-y-6"></div>
+            <div id="team-management" class="tab-content active space-y-6">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">1. 레이드 설정</h3>
+                            <button id="toggle-party-settings-btn" class="btn btn-secondary btn-sm text-xs">자동 분배 설정 (OFF)</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label for="boss-select" class="font-medium text-sm">보스 선택</label><select id="boss-select" class="select-field mt-1"></select></div>
+                            <div><label for="play-time" class="font-medium text-sm">플레이 시간 (시간)</label><input type="number" id="play-time" class="input-field mt-1" value="1" min="0.5" step="0.5"></div>
+                            <div class="md:col-span-2"><label for="total-players" class="font-medium text-sm">총 인원수</label><input type="number" id="total-players" class="input-field mt-1" value="8" min="1"></div>
+                        </div>
+                        <div id="manual-party-settings-wrapper" class="space-y-2 pt-4 border-t border-gray-600 mt-4 hidden">
+                            <label for="party-count" class="font-medium text-sm">파티 분배 설정</label>
+                            <div class="flex items-center gap-4">
+                                <select id="party-count" class="select-field">
+                                    <option value="2">2개 파티</option>
+                                    <option value="3">3개 파티</option>
+                                    <option value="4">4개 파티</option>
+                                </select>
+                                <div id="party-size-inputs" class="flex-grow flex items-center gap-2"></div><span id="party-size-validation" class="text-sm font-semibold"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card space-y-4"><h3 class="text-lg font-semibold">2. 아이템 정보</h3><div id="item-pick-section" class="space-y-2"></div></div>
+                </div>
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-semibold">3. 파티원 정보 입력</h3>
+                            <span id="item-dupe-warning" class="text-sm font-bold text-red-400 hidden"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="grant-points-from-team-btn" class="btn btn-primary btn-sm admin-only"><i data-lucide="coins" class="icon-xs mr-2"></i>참가 인원 포인트 부여</button>
+                            <button id="reset-party-info-btn" class="btn btn-danger btn-sm"><i data-lucide="trash-2" class="icon-xs mr-2"></i>정보 초기화</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-700 text-gray-300">
+                                <tr>
+                                    <th class="p-2 w-10">#</th>
+                                    <th class="p-2 w-16 text-center">타인<br>직업</th>
+                                    <th class="p-2 w-48">참가자 JN ID</th>
+                                    <th class="p-2 w-48">직업 소유자 JN ID</th>
+                                    <th class="p-2 w-32">직업 선택</th>
+                                    <th class="p-2 w-20 text-center">직업</th>
+                                    <th class="p-2 w-28">직업 분류</th>
+                                    <th class="p-2 item-pick-header">아이템 픽</th>
+                                </tr>
+                            </thead>
+                            <tbody id="player-input-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="distribute-btn-wrapper" class="flex justify-center hidden"><button id="distribute-party-btn" class="btn btn-primary text-base"><i data-lucide="shuffle" class="mr-2"></i>자동 파티 분배 실행</button></div>
+                <div id="party-result-section" class="hidden space-y-6">
+                     <h2 class="text-xl font-bold text-center">🎉 자동 파티 분배 제안 🎉</h2>
+                     <p class="text-center text-sm text-gray-400">파티원을 드래그하여 자리를 바꿀 수 있습니다.</p>
+                     <div id="party-suggestions" class="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
+                </div>
+            </div>
+            
+            <div id="user-management" class="tab-content space-y-6">
+                <div id="approval-section" class="card admin-only">
+                    <h3 class="text-lg font-semibold mb-4">가입 승인 대기 목록</h3>
+                    <div id="approval-list" class="space-y-4"></div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4">전체 유저 목록</h3>
+                    <div id="user-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="point-management" class="tab-content space-y-6">
+                 <div class="card admin-only">
+                    <h3 class="text-lg font-semibold mb-4">포인트 이전</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div class="autocomplete-container"><label for="transfer-from-id" class="font-medium text-sm">보내는 유저 (JN ID)</label><input type="text" id="transfer-from-id" class="input-field mt-1" placeholder="ID 입력"></div>
+                        <div class="autocomplete-container"><label for="transfer-to-id" class="font-medium text-sm">받는 유저 (JN ID)</label><input type="text" id="transfer-to-id" class="input-field mt-1" placeholder="ID 입력"></div>
+                        <div><label for="transfer-amount" class="font-medium text-sm">이전할 포인트</label><input type="number" step="0.1" id="transfer-amount" class="input-field mt-1" placeholder="예: 10"></div>
+                        <button id="transfer-points-btn" class="btn btn-primary">이전</button>
+                    </div>
+                </div>
+                <div class="card admin-only">
+                    <h3 class="text-lg font-semibold mb-4">개인 포인트 조정</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div class="autocomplete-container"><label for="manual-point-id" class="font-medium text-sm">대상 JN ID</label><input type="text" id="manual-point-id" class="input-field mt-1" placeholder="ID 입력"></div>
+                        <div><label for="manual-point-change" class="font-medium text-sm">포인트 변동량</label><input type="number" step="0.1" id="manual-point-change" class="input-field mt-1" placeholder="예: 1.5 또는 -1"></div>
+                        <div><label for="manual-point-reason" class="font-medium text-sm">사유</label><input type="text" id="manual-point-reason" class="input-field mt-1" placeholder="예: 이벤트 보상"></div>
+                        <button id="manual-apply-points-btn" class="btn btn-primary">적용</button>
+                    </div>
+                </div>
+                <div class="card admin-only">
+                    <h3 class="text-lg font-semibold mb-4">일괄 포인트 조정</h3>
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <div class="flex-grow"><label for="point-change" class="font-medium text-sm">포인트 변동량</label><input type="number" id="point-change" step="0.1" class="input-field mt-1" placeholder="예: 1.5 또는 -0.5"></div>
+                        <div class="flex-grow"><label for="point-reason" class="font-medium text-sm">사유</label><input type="text" id="point-reason" class="input-field mt-1" placeholder="예: 레이드 참여"></div>
+                        <button id="apply-points-btn" class="btn btn-primary">선택 인원 적용</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">전체 유저 포인트 현황</h3><span id="checked-user-count" class="text-sm font-semibold text-gray-400"></span></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-700 text-gray-300">
+                                <tr>
+                                    <th class="p-2 w-10">#</th><th class="p-2 w-12"><input type="checkbox" id="select-all-users" class="admin-only"></th><th class="p-2">JN ID</th><th class="p-2">현재 포인트</th><th class="p-2">최근 변동</th>
+                                </tr>
+                            </thead>
+                            <tbody id="point-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="point-search" class="tab-content space-y-6">
+                 <div class="card">
+                    <h3 class="text-lg font-semibold mb-4">특정 유저 포인트 이력 검색 (JN ID)</h3>
+                    <div class="flex gap-4 autocomplete-container">
+                        <input type="text" id="search-user-id" class="input-field" placeholder="검색할 JN ID를 입력하세요."><button id="search-points-btn" class="btn btn-primary"><i data-lucide="search" class="icon-xs mr-2"></i>검색</button>
+                    </div>
+                </div>
+                <div id="search-result-card" class="card hidden">
+                     <h3 class="text-lg font-semibold mb-4"><span id="searched-id-display"></span>님의 포인트 이력</h3>
+                     <p class="mb-4">현재 포인트: <span id="current-points-display" class="font-bold text-lg"></span></p>
+                     <div class="overflow-x-auto">
+                         <table class="w-full text-sm text-left"><thead class="bg-gray-700 text-gray-300"><tr><th class="p-2">시간</th><th class="p-2">변동량</th><th class="p-2">사유</th><th class="p-2">누적 포인트</th></tr></thead><tbody id="point-log-table-body"></tbody></table>
+                    </div>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <div id="character-editor-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-40 hidden">
+        <div class="card w-full max-w-2xl">
+            <h3 class="text-lg font-semibold mb-4">캐릭터 정보 수정: <span id="editing-jn-id"></span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
+                <div>
+                    <label for="modal-char-stat" class="font-medium text-sm">직업 속성</label>
+                    <select id="modal-char-stat" class="select-field mt-1"><option value="">속성 선택</option></select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="modal-char-job" class="font-medium text-sm">직업</label>
+                    <div class="flex items-center gap-2">
+                        <select id="modal-char-job" class="select-field mt-1" disabled></select>
+                        <button type="button" id="modal-add-character-btn" class="btn btn-secondary flex-shrink-0">추가</button>
+                    </div>
+                </div>
+            </div>
+            <div id="modal-registered-characters" class="mt-4 space-y-2 border-t border-gray-600 pt-4">
+            </div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button id="modal-close-btn" class="btn btn-secondary">닫기</button>
+                <button id="modal-save-btn" class="btn btn-primary">저장</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="main.js" defer></script>
 </body>
